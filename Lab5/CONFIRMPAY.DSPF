@@ -1,0 +1,21 @@
+     A          R RECORD1
+     A                                  2  4USER
+     A                                  3  4'Cindy Le'
+     A                                  2 70DATE
+     A                                      EDTCDE(Y)
+     A                                  2 29'Payroll Program Completed'
+     A                                  7 19'Day Rate:'
+     A            DAYRATE        5Y 2O  7 37EDTCDE(1)
+     A                                  8 19'Afternoon Rate:'
+     A            AFTNRATE       5Y 2O  8 37EDTCDE(1)
+     A                                  9 19'Night Rate'
+     A            NIGHTRATE      5Y 2O  9 37EDTCDE(1)
+     A                                 12  9'Totals:'
+     A                                  5  9'Rates:'
+     A                                 13 19'Regular Pay:'
+     A            TOTREGPAY      9  2O 13 37EDTCDE(1)
+     A                                 14 19'Overtime Pay:'
+     A            TOTOVTPAY      9  2O 14 37EDTCDE(1)
+     A                                 15 19'Company Payout:'
+     A            TOTWKPAY       9  2O 15 36EDTCDE(1 $)
+ 
