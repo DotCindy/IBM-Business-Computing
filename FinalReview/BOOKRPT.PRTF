@@ -1,99 +1,56 @@
-         // FILES
-         DCL-F BkCustomer Disk(*EXT) Rename(BkCustomer:BkCustR);
-         DCL-F BookRpt Printer OFLIND(*IN01);
-
-         // PASSED PARAMETER
-         DCL-PI MAIN EXTPGM('BOOKSQL');
-           ReportTitle Char(15);
-         END-PI;
-
-         // GET FIELDS FROM THE TABLE ACCESSED WITH EMBEDDED SQL
-         DCL-DS AudibleBks EXT END-DS;
-
-         // VARIABLES (FOR UNKNOWN VALUES AND DUMMY)
-         DCL-S IndGenre BINDEC(4:0);
-         DCL-S Dummy Zoned(1:0);
-
-
-         //  *** MAIN ROUTINE *** //
-         EXSR SummaryInfo;
-         Write Title;
-         Write ColHdg;
-         Read BkCustomer;
-
-         DOW NOT %EOF;   // LOOP
-           EXSR SQLSelect;
-           If *IN01 = *ON;
-             WRITE TITLE;
-             WRITE ColHdg;
-             *IN01 = *OFF;
-           ENDIF;
-           TOTQTY = TOTQTY + QTY;
-           Write Detail;
-           Read BkCustomer;
-         ENDDO;
-         Write Totals;
-         *INLR = *ON;
-         RETURN;
-
-
-         // *** SQLSELECT SUBROUTINE *** //
-         BEGSR SQLSelect;
-           EXEC SQL
-             SELECT Book, Genre, Price
-             INTO :Book, :Genre :IndGenre, :Price
-             FROM BCI433LIB/AudibleBks
-             WHERE BookId = :BookPur#;
-
-             SELECT;
-               WHEN SQLSTATE = '00000';
-                 Dummy = 0;
-               WHEN SQLSTATE = '02000';
-                 Book = 'Not Found';
-               WHEN %Subst(SQLSTATE:1:2) = '01';
-                 Book = 'Warning';
-               OTHER;
-                 Book = 'Error';
-             ENDSL;
-             If IndGenre = -1;
-               Genre = 'Unknown Genre';
-             ENDIF;
-
-             SELECT;
-               When Discount <> 0;
-                 EVAL(H) DisPrice = Price - (Price * Discount);
-               Other;
-                 DisPrice = Price;
-             ENDSL;
-             ExPrice = DisPrice * Qty;
-         ENDSR;
-
-         // *** SUMMARYINFO SUBROUTINE *** //
-         BEGSR SummaryInfo;
-           // DETERMINE TOTALS FOR BkCustomer
-           EXEC SQL
-             SELECT COUNT(*) INTO :BkCustTot
-               FROM BCI433LIB/BkCustomer;
-
-           IF (SQLCODE <> 0) OR (SQLWN0 = 'W');
-             BkCustTot = -999;
-           ENDIF;
-
-           // DETERMINE Highest Quantity Customer Purchase
-           EXEC SQL
-             SELECT Max(Qty) INTO :MostBooks
-             FROM BCI433LIB/BkCustomer;
-
-           IF (SQLCODE <> 0) OR (SQLWN0 = 'W');
-             MostBooks = -99;
-           ENDIF;
-
-           // DETERMINE Total Quantity books purchased for all Customers
-
-
-           // DETERMINE THE SERVER & DATE
-           EXEC SQL
-             SELECT Current Date, Current Server
-               INTO :ReportDate, :SystemName
-               FROM SYSIBM/SYSDUMMY1;
-         ENDSR; 
+     A          R TITLE
+     A                                  1 41'Customer Purchase Report'
+     A                                  1120'Page:'
+     A                                  1126PAGNBR
+     A                                  3  3 ' '
+     A                                  1  4'System Name:'
+     A            SYSTEMNAME    10      1 18
+     A            REPRTTITLE    15      1 71
+     A            REPORTDATE      L     1107
+     A          R COLHDG                    SPACEB(1)
+     A                                      SPACEA(1)
+     A                                     6'Customer'
+     A                                    22'Book Purchased'
+     A                                    65'Purchased'
+     A                                    79'Genre'
+     A                                    96'Qty'
+     A                                   101'Price'
+     A                                   108'Discount'
+     A                                   118'Unit'
+     A                                   124'Extended'
+     A                                     6'Number'
+     A                                      SPACEB(1)
+     A                                    66'Date'
+     A                                   117'Price'
+     A                                   126'Price'
+     A          R DETAIL
+     A            CUSTNUM   R              2REFFLD(BKCUSTOMER/CUSTNUM +
+     A                                      BCI433LIB/BKCUSTOMER)
+     A                                      SPACEB(1)
+     A            BOOK      R             12REFFLD(AUDIBLEBKS/BOOK +
+     A                                      BCI433LIB/AUDIBLEBKS)
+     A            PDATE     R     L       63REFFLD(BKCUSTOMER/PDATE +
+     A                                      BCI433LIB/BKCUSTOMER)
+     A            GENRE     R             74REFFLD(AUDIBLEBKS/GENRE +
+     A                                      BCI433LIB/AUDIBLEBKS)
+     A            QTY       R             96REFFLD(BKCUSTOMER/QTY +
+     A                                      BCI433LIB/BKCUSTOMER)
+     A            PRICE     R            102REFFLD(AUDIBLEBKS/PRICE +
+     A                                      BCI433LIB/AUDIBLEBKS)
+     A                                      EDTCDE(1)
+     A            DISCOUNT  R            111REFFLD(BKCUSTOMER/DISCOUNT +
+     A                                      BCI433LIB/BKCUSTOMER)
+     A                                      EDTCDE(2)
+     A            DISPRICE       5  2    117EDTCDE(1)
+     A            EXPRICE        5  2    125EDTCDE(1)
+     A          R TOTALS
+     A                                    76'Totals Book Sold:'
+     A                                      SPACEB(2)
+     A            TOTQTY         3  0     95
+     A                                      EDTCDE(1)
+     A                                     6'Highest Customer Quantity'
+     A                                      SPACEB(2)
+     A            MOSTBOOKS      3  0     34EDTCDE(1)
+     A                                     6'Total BkCustomer Records:'
+     A                                      SPACEB(1)
+     A            BKCUSTTOT      3  0     34EDTCDE(1) 
